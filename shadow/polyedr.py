@@ -128,6 +128,9 @@ class Polyedr:
         # списки вершин, рёбер и граней полиэдра
         self.vertexes, self.edges, self.facets = [], [], []
 
+        # списки без учёта поворота и коэфф. гомотетии
+        self.vertexes_r, self.edges_r = [], []
+
         # список строк файла
         with open(file) as f:
             for i, line in enumerate(f):
@@ -145,8 +148,13 @@ class Polyedr:
                 elif i < nv + 2:
                     # задание всех вершин полиэдра
                     x, y, z = (float(x) for x in line.split())
+                    # в списке ниже координаты вершин с
+                    # учетом поворота и коэфф. гомотетии
                     self.vertexes.append(R3(x, y, z).rz(
                         alpha).ry(beta).rz(gamma) * c)
+                    # в списке ниже координаты вершин без
+                    # учета поворота и коэфф. гомотетии
+                    self.vertexes_r.append(R3(x, y, z))
                 else:
                     # вспомогательный массив
                     buf = line.split()
@@ -154,31 +162,33 @@ class Polyedr:
                     size = int(buf.pop(0))
                     # массив вершин этой грани
                     vertexes = list(self.vertexes[int(n) - 1] for n in buf)
+                    vertexes_r = list(self.vertexes_r[int(n) - 1] for n in buf)
                     # задание рёбер грани
                     for n in range(size):
                         self.edges.append(Edge(vertexes[n - 1], vertexes[n]))
+                        self.edges_r.append(Edge(vertexes_r[n - 1], vertexes_r[n]))
                     # задание самой грани
                     self.facets.append(Facet(vertexes))
 
     # Удаление дубликатов рёбер
-    def edges_uniq(self):
-        edges = {}
-        for e in self.edges:
-            if (e.beg, e.fin) not in edges and (e.fin, e.beg) not in edges:
-                edges[(e.beg, e.fin)] = e
-        self.edges = list(edges.values())
+    def edges_r_uniq(self):
+        edges_r = {}
+        for e in self.edges_r:
+            if (e.beg, e.fin) not in edges_r and (e.fin, e.beg) not in edges_r:
+                edges_r[(e.beg, e.fin)] = e
+        self.edges_r = list(edges_r.values())
 
     # Подсчет искомой суммы
     def length(self):
         answer = 0.0
-        self.edges_uniq()
-        for e in self.edges:
+        self.edges_r_uniq()
+        for e in self.edges_r:
             start = e.beg
             end = e.fin
             mid = (start + end) * 0.5
             if not mid.is_good():
                 if not start.is_good() or not end.is_good():
-                    answer += start.distance(end)/self.k
+                    answer += start.distance(end)
         return answer
 
     # Метод изображения полиэдра
@@ -191,3 +201,4 @@ class Polyedr:
             for s in e.gaps:
                 tk.draw_line(e.r3(s.beg), e.r3(s.fin))
         return ans_len
+        
