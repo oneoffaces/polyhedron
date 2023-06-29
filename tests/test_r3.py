@@ -14,4 +14,4 @@ class TestR3:
 
     def test_is_good2(self):
         a = R3(1.0, 2.0, 3.0)
-        assert not(a.is_good())
+        assert not (a.is_good())
