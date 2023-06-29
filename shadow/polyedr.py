@@ -166,7 +166,8 @@ class Polyedr:
                     # задание рёбер грани
                     for n in range(size):
                         self.edges.append(Edge(vertexes[n - 1], vertexes[n]))
-                        self.edges_r.append(Edge(vertexes_r[n - 1], vertexes_r[n]))
+                        self.edges_r.append(Edge(vertexes_r[n - 1], 
+                                                 vertexes_r[n]))
                     # задание самой грани
                     self.facets.append(Facet(vertexes))
 
@@ -201,4 +202,3 @@ class Polyedr:
             for s in e.gaps:
                 tk.draw_line(e.r3(s.beg), e.r3(s.fin))
         return ans_len
-        
